@@ -652,12 +652,10 @@ VanillaPinchZoom.prototype = {
     var pinchContainerExists = this.el.parentNode.classList.contains('PinchZoom-container');
     if (!pinchContainerExists) {
       this.el.insertAdjacentHTML('beforebegin', '<div class="PinchZoom PinchZoom-container"></div>');
-    }
-
-    this.container = this.el.parentNode;
-
-    if (!pinchContainerExists) {
+      this.container = this.el.parentNode.querySelector('.PinchZoom-container');
       this.container.appendChild(this.el);
+    } else {
+      this.container = this.el.parentNode;
     }
 
     applyStyles(this.container, {
