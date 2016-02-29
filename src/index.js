@@ -173,6 +173,7 @@ function VanillaPinchZoom(el, options) {
     x: 0,
     y: 0
   };
+  this.boundWindowEvent;
 
   this.options = assign({}, this.defaults, options);
 
@@ -619,9 +620,14 @@ VanillaPinchZoom.prototype = {
    * Creates the expected html structure
    */
   setupMarkup: function () {
-    this.el.insertAdjacentHTML('beforebegin', '<div class="PinchZoom PinchZoom-container"></div>');
-    this.container = this.el.parentNode.querySelector('.PinchZoom-container');
-    this.container.appendChild(this.el);
+    var pinchContainerExists = this.el.parentNode.classList.contains('PinchZoom-container');
+    if (!pinchContainerExists) {
+      this.el.insertAdjacentHTML('beforebegin', '<div class="PinchZoom PinchZoom-container"></div>');
+      this.container = this.el.parentNode.querySelector('.PinchZoom-container');
+      this.container.appendChild(this.el);
+    } else {
+      this.container = this.el.parentNode;
+    }
 
     applyStyles(this.container, {
         'overflow': 'visible',
@@ -649,11 +655,20 @@ VanillaPinchZoom.prototype = {
    */
   bindEvents: function () {
     detectGestures(this.container, this);
+    this.boundWindowEvent = this.update.bind(this);
     // Zepto and jQuery both know about `on`
-    window.addEventListener('resize', this.update.bind(this), false);
+    window.addEventListener('resize', this.boundWindowEvent, false);
     var images = this.el.querySelectorAll('img');
     for (var i = 0; i < images.length; i++) {
-      images[i].addEventListener('load', this.update.bind(this));
+      images[i].addEventListener('load', this.boundWindowEvent);
+    }
+  },
+
+  unbindEvents: function() {
+    window.removeEventListener('resize', this.boundWindowEvent, false);
+    var images = this.el.querySelectorAll('img');
+    for (var i = 0; i < images.length; i++) {
+      images[i].removeEventListener('load', this.boundWindowEvent);
     }
   },
 
